@@ -362,8 +362,24 @@ export function GameDetailsContextProvider({
         defaultPath: downloadsPath,
         filters: [
           {
-            name: "Game executable",
-            extensions: ["exe", "lnk"],
+            name: "All Files",
+            extensions: ["*"],
+          },
+          {
+            name: "Game Executable",
+            extensions: [
+              "exe",
+              "msi",
+              "app",
+              "deb",
+              "rpm",
+              "dmg",
+              "AppImage",
+              "sh",
+              "x86_64",
+              "x86",
+              "bin",
+            ],
           },
         ],
       })

@@ -25,6 +25,8 @@ export interface LaunchGameOptions {
   launchOptions?: string | null;
 }
 
+const linuxExecutables = [".sh", ".x86_64", ".appimage"];
+
 const isWindowsExecutable = (executablePath: string) =>
   path.extname(executablePath).toLowerCase() === ".exe";
 
@@ -35,6 +37,12 @@ const launchNatively = (
   useGamemode = false
 ) => {
   const workingDirectory = path.dirname(executablePath);
+
+  const fileExt = path.extname(executablePath).toLowerCase();
+  const isNativeLinuxBinary =
+    process.platform === "linux" &&
+    (linuxExecutables.includes(fileExt) || fileExt === "");
+
   const resolvedLaunchCommand = resolveLaunchCommand({
     baseCommand: executablePath,
     launchOptions,
@@ -49,6 +57,17 @@ const launchNatively = (
     resolvedLaunchCommand.args.length === 0 &&
     Object.keys(resolvedLaunchCommand.env).length === 0
   ) {
+    if (isNativeLinuxBinary) {
+      const nativeProcess = spawn(executablePath, [], {
+        shell: true,
+        detached: true,
+        stdio: "inherit",
+        cwd: workingDirectory,
+      });
+
+      nativeProcess.unref();
+      return;
+    }
     shell.openPath(executablePath);
     return;
   }
@@ -281,7 +300,6 @@ export const launchGame = async (options: LaunchGameOptions): Promise<void> => {
         return;
       }
     }
-
     launchNatively(parsedPath, launchOptions, useMangohud, useGamemode);
     return;
   }

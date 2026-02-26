@@ -31,6 +31,16 @@ const closeGame = async (
 
   const gameProcess = processes.find((runningProcess) => {
     if (process.platform === "linux") {
+      if (
+        game.executablePath?.split("/").at(-1)?.toLowerCase().endsWith(".sh") ||
+        game.executablePath
+          ?.split("/")
+          .at(-1)
+          ?.toLowerCase()
+          .endsWith(".appimage")
+      ) {
+        return false;
+      }
       return runningProcess.name === game.executablePath?.split("/").at(-1);
     }
 
@@ -38,17 +48,37 @@ const closeGame = async (
   });
 
   const linuxFallbackProcess =
-    process.platform === "linux" &&
-    !gameProcess &&
-    game.executablePath?.toLowerCase().endsWith(".exe")
+    process.platform === "linux" && !gameProcess
       ? processes.find((runningProcess) => {
           const processCwd = runningProcess.cwd?.toLowerCase();
-          const gameDirectory = path
-            .dirname(game.executablePath!)
-            .toLowerCase();
+          const processExe = runningProcess.exe?.toLowerCase();
+          const processName = runningProcess.name?.toLowerCase();
+          const gameDir = path.dirname(game.executablePath!).toLowerCase();
 
-          if (!processCwd || processCwd !== gameDirectory) {
+          if (game.executablePath?.toLowerCase().endsWith(".appimage")) {
+            if (
+              processExe &&
+              processExe.includes("/tmp/.mount_") &&
+              !processName.endsWith(".sh") &&
+              processName !== "sh"
+            ) {
+              return true;
+            }
+          }
+          if (!processCwd || !processCwd.startsWith(gameDir)) {
             return false;
+          }
+          if (
+            processName?.endsWith(".sh") ||
+            processName === "bash" ||
+            processName === "sh" ||
+            processExe?.startsWith("/usr/bin")
+          ) {
+            return false;
+          }
+
+          if (!game.executablePath?.toLowerCase().endsWith(".exe")) {
+            return !processName.endsWith(".sh");
           }
 
           const expectedPrefix = game.winePrefixPath?.toLowerCase();
@@ -63,7 +93,7 @@ const closeGame = async (
             return false;
           }
 
-          return runningProcess.exe?.toLowerCase().includes("wine") ?? false;
+          return processExe?.includes("wine") ?? false;
         })
       : null;
 

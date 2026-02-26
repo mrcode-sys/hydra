@@ -35,8 +35,23 @@ export function SidebarAddingCustomGameModal({
       properties: ["openFile"],
       filters: [
         {
+          name: "All Files",
+          extensions: ["*"],
+        },
+        {
           name: t("custom_game_modal_executable"),
-          extensions: ["exe", "msi", "app", "deb", "rpm", "dmg"],
+          extensions: [
+            "exe",
+            "msi",
+            "app",
+            "deb",
+            "rpm",
+            "dmg",
+            "AppImage",
+            "sh",
+            "x86_64",
+            "x86",
+          ],
         },
       ],
     });

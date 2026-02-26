@@ -108,7 +108,7 @@ const findGamePathByProcess = async (
               executablePath: path,
             };
 
-            if (process.platform === "linux" && winePrefixMap.has(path)) {
+            if (platform === "linux" && winePrefixMap.has(path)) {
               updatedGame.winePrefixPath = winePrefixMap.get(path)!;
             }
 
@@ -138,7 +138,6 @@ const getSystemProcessMap = async () => {
         : path.join(process.cwd ?? "", process.name ?? "");
 
     if (!key || !value) return;
-
     const STEAM_COMPAT_DATA_PATH = process.environ?.STEAM_COMPAT_DATA_PATH;
     if (STEAM_COMPAT_DATA_PATH) {
       winePrefixMap.set(value, STEAM_COMPAT_DATA_PATH);
@@ -165,20 +164,38 @@ const hasLinuxCompatibilityProcessMatch = (
   executablePath: string,
   linuxProcesses: LinuxProcessInfo[]
 ) => {
-  if (path.extname(executablePath).toLowerCase() !== ".exe") {
-    return false;
-  }
-
   const executableName = path.basename(executablePath).toLowerCase();
   const executableNameWithoutExtension = executableName.replace(/\.exe$/i, "");
   const executableDirectory = path.dirname(executablePath).toLowerCase();
   const expectedWinePrefix = game.winePrefixPath?.toLowerCase();
 
   return linuxProcesses.some((process) => {
-    if (process.cwd !== executableDirectory) {
+    const processCwd = process.cwd?.toLowerCase();
+    const processName = process.name?.toLowerCase();
+    if (
+      processName === "grep" ||
+      processName === "bash" ||
+      processName === "sh"
+    ) {
       return false;
     }
 
+    if (executablePath.toLowerCase().endsWith(".appimage")) {
+      if (
+        process.exe?.toLowerCase().includes("/tmp/.mount_") &&
+        !processName.endsWith(".sh")
+      ) {
+        return true;
+      }
+    }
+    if (processCwd === executableDirectory) {
+      if (!processName.endsWith(".sh")) {
+        return true;
+      }
+    }
+    if (path.extname(executablePath).toLowerCase() !== ".exe") {
+      return processName === executableName;
+    }
     if (
       expectedWinePrefix &&
       process.steamCompatDataPath &&
@@ -223,7 +240,6 @@ export const watchProcesses = async () => {
 
       continue;
     }
-
     const executable = executablePath
       .slice(executablePath.lastIndexOf(platform === "win32" ? "\\" : "/") + 1)
       .toLowerCase();

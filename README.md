@@ -5,11 +5,12 @@
   <h1 align="center">Hydra Launcher</h1>
 
   <p align="center">
-    <strong>Hydra Launcher with support for native Linux games (Not tested on Windows)</strong>
+    <strong>Hydra Launcher with support for native Linux games, Achievements don't work for games native to Linux. (suport not tested on Windows)</strong>
   </p>
   <p align="center">
     <a href="https://github.com/hydralauncher/hydra">Original Hydra</a>
   </p>
+
 [![build](https://img.shields.io/github/actions/workflow/status/hydralauncher/hydra/build.yml)](https://github.com/hydralauncher/hydra/actions)
 [![release](https://img.shields.io/github/package-json/v/hydralauncher/hydra)](https://github.com/hydralauncher/hydra/releases)
 [![chocolatey](https://img.shields.io/chocolatey/v/hydralauncher.svg)](https://community.chocolatey.org/packages/hydralauncher)
